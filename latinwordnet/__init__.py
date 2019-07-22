@@ -1,0 +1,1 @@
+from .latinwordnet import LatinWordNet
