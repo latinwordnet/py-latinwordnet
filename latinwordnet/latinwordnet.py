@@ -37,8 +37,8 @@ class Semfields:
 class Synsets:
     def __init__(self, host, pos=None, offset=None, gloss=None):
         self.host = host
-        self.offset = f"{offset}/" if offset else '*/'
-        self.pos = f"{pos}/" if pos else '*/'
+        self.offset = f"{offset}/" if offset else ''
+        self.pos = f"{pos}/" if pos else ''
         self.gloss = gloss
         self.json = None
 
@@ -52,9 +52,6 @@ class Synsets:
             return requests.request('GET', f"{self.host}/synsets?search={self.lemma}").json()['results']
         else:
             return None
-
-    # def __repr__(self):
-    #     return requests.request('GET', f"{self.host}/synsets/{self.pos}/{self.offset}/?format=json").json()
 
     def __iter__(self):
         return iter(self.get())
@@ -99,9 +96,6 @@ class Lemmas:
         else:
             return None
 
-    # def __repr__(self):
-    #     return requests.request('GET', f"{self.host}/lemmas/{self.lemma}{self.pos}{self.morpho}?format=json").json()
-
     def __iter__(self):
         return iter(self.get())
 
@@ -137,12 +131,12 @@ class LatinWordNet:
 
     def lemmatize(self, form: str):
         results = requests.request('GET', f"{self.host}/lemmatize/{form}/?format=json")
-        return iter(results.json()) if results else None
+        return iter(results.json()) if results else []
 
     def translate(self, language: str, form: str, pos: str='*'):
         pos = f"{pos}/" if pos else ''
         results = requests.get(f"{self.host}/translate/{language}/{form}/{pos}?format=json")
-        return iter(results.json()) if results else None
+        return iter(results.json()) if results else []
 
     def lemmas(self, lemma=None, pos=None, morpho=None):
         return Lemmas(self.host, lemma, pos, morpho)
@@ -150,7 +144,7 @@ class LatinWordNet:
     def lemmas_by_uri(self, uri):
         return Lemmas(self.host, uri=uri)
 
-    def synsets(self, pos: str, offset: str=None, gloss: str=None):
+    def synsets(self, pos: str=None, offset: str=None, gloss: str=None):
         return Synsets(self.host, pos, offset, gloss)
 
     def semfields(self, code: str=None, english: str=None):
@@ -160,4 +154,4 @@ class LatinWordNet:
         pos = f"{pos}/" if pos else '*/'
         morpho = f"{morpho}/" if morpho else ''
         results = requests.request('GET', f"{self.host}/index/{pos}{morpho}/?format=json")
-        return iter(results.json()) if results else None
+        return iter(results.json()) if results else []

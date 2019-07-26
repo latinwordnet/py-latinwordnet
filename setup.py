@@ -1,12 +1,12 @@
 from setuptools import setup, find_packages
-from os import path
+
 
 with open('README.md', encoding='utf-8') as f:
     long_description = f.read()
 
 setup(
     name='latinwordnet',
-    version='0.0.3',
+    version='0.0.7',
     packages=find_packages(),
     url='https://latinwordnet.exeter.ac.uk',
     license='GNU General Public License v3.0',
