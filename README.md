@@ -1,3 +1,5 @@
+[![Build Status](https://travis-ci.org/wmshort/latinwordnet.svg?branch=master)](https://travis-ci.org/wmshort/latinwordnet)
+
 Latin WordNet 2.0 API
 =====================
 
