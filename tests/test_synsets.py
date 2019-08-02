@@ -20,7 +20,7 @@ class TestIndex(unittest.TestCase):
         """Test the Latin WordNet 2.0 API (synsets)."""
 
         LWN = LatinWordNet()
-        assert LWN.synsets(pos='n', offset='04349777').get()['gloss'].startswith(
+        assert LWN.synsets(pos='n', offset='04349777').get()[0]['gloss'].startswith(
             'possession of the qualities'
         )
         assert LWN.synsets(pos='n', offset='04349777').lemmas
