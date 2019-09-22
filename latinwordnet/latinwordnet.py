@@ -14,7 +14,7 @@ class Semfields:
         if self.json is None:
             self.json = requests.get(
                 f"{self.host}/api/semfields/{self.code}/?format=json",
-                timeout=(5.0, 30.0)
+                timeout=(10.0, 60.0)
             ).json()
         return self.json
 
@@ -22,7 +22,7 @@ class Semfields:
         if self.english:
             return requests.get(
                 f"{self.host}/api/semfields?search={self.english}",
-                timeout=(5.0, 30.0)
+                timeout=(10.0, 60.0)
             ).json()["results"]
         else:
             return None
@@ -35,7 +35,7 @@ class Semfields:
         return iter(
             requests.get(
                 f"{self.host}/api/semfields/{self.code}/lemmas/?format=json",
-                timeout=(5.0, 30.0)
+                timeout=(10.0, 60.0)
             ).json()
         )
 
@@ -44,7 +44,7 @@ class Semfields:
         return iter(
             requests.get(
                 f"{self.host}/api/semfields/{self.code}/synsets/?format=json",
-                timeout=(5.0, 30.0)
+                timeout=(10.0, 60.0)
             ).json()
         )
 
@@ -63,13 +63,13 @@ class Synsets:
 
             results = requests.get(
                 f"{self.host}/api/synsets/{self.pos}{self.offset}?format=json",
-                timeout=(5.0, 30.0)
+                timeout=(10.0, 60.0)
             ).json()
             if 'results' in results:
                 self.json.extend(results["results"])
 
                 while results["next"]:
-                    results = requests.get(results["next"], timeout=(5.0, 30.0)).json()
+                    results = requests.get(results["next"], timeout=(10.0, 60.0)).json()
                     self.json.extend(results["results"])
             else:
                 self.json = [results,]
@@ -79,7 +79,7 @@ class Synsets:
         if self.gloss:
             return requests.get(
                 f"{self.host}/api/synsets?search={self.gloss}",
-                timeout=(5.0, 30.0)
+                timeout=(10.0, 60.0)
             ).json()["results"]
         else:
             return None
@@ -91,21 +91,21 @@ class Synsets:
     def lemmas(self):
         return requests.get(
             f"{self.host}/api/synsets/{self.pos}{self.offset}lemmas/?format=json",
-            timeout=(5.0, 30.0)
+            timeout=(10.0, 60.0)
         ).json()
 
     @property
     def relations(self):
         return requests.get(
             f"{self.host}/api/synsets/{self.pos}{self.offset}relations/?format=json",
-            timeout=(5.0, 30.0)
+            timeout=(10.0, 60.0)
         ).json()["relations"]
 
     @property
     def sentiment(self):
         return requests.get(
             f"{self.host}/api/synsets/{self.pos}{self.offset}sentiment/?format=json",
-            timeout=(5.0, 30.0)
+            timeout=(10.0, 60.0)
         ).json()["sentiment"]
 
 
@@ -123,13 +123,13 @@ class Lemmas:
             if self.uri is not None:
                 self.json = requests.get(
                     f"{self.host}/api/uri/{self.uri}?format=json",
-                    timeout=(5.0, 30.0)
+                    timeout=(10.0, 60.0)
                 ).json()
 
             else:
                 self.json = requests.get(
                     f"{self.host}/api/lemmas/{self.lemma}{self.pos}{self.morpho}?format=json",
-                    timeout=(5.0, 30.0)
+                    timeout=(10.0, 60.0)
                 ).json()
         return self.json
 
@@ -137,12 +137,12 @@ class Lemmas:
         if self.lemma:
             results = self.json = requests.get(
                 f"{self.host}/api/lemmas/?search={self.lemma.strip('/')}",
-                timeout=(5.0, 30.0)
+                timeout=(10.0, 60.0)
                 ).json()
             yield from results["results"]
 
             while results["next"]:
-                results = requests.get(results["next"], timeout=(5.0, 30.0)).json()
+                results = requests.get(results["next"], timeout=(10.0, 60.0)).json()
                 yield from results["results"]
 
     def __iter__(self):
@@ -153,12 +153,12 @@ class Lemmas:
         if self.uri is not None:
             return requests.get(
                 f"{self.host}/api/uri/{self.uri}/synsets/?format=json",
-                timeout=(5.0, 30.0)
+                timeout=(10.0, 60.0)
             ).json()
         else:
             return requests.get(
                 f"{self.host}/api/lemmas/{self.lemma}{self.pos}{self.morpho}synsets/?format=json",
-                timeout=(5.0, 30.0)
+                timeout=(10.0, 60.0)
             ).json()
 
     @property
@@ -166,12 +166,12 @@ class Lemmas:
         if self.uri is not None:
             return requests.get(
                 f"{self.host}/api/uri/{self.uri}/relations/?format=json",
-                timeout=(5.0, 30.0)
+                timeout=(10.0, 60.0)
             ).json()
         else:
             return requests.get(
                 f"{self.host}/api/lemmas/{self.lemma}{self.pos}{self.morpho}relations/?format=json",
-                timeout=(5.0, 30.0)
+                timeout=(10.0, 60.0)
             ).json()
 
     @property
@@ -179,12 +179,12 @@ class Lemmas:
         if self.uri is not None:
             return requests.get(
                 f"{self.host}/api/uri/{self.uri}/synsets/relations/?format=json",
-                timeout=(5.0, 30.0)
+                timeout=(10.0, 60.0)
             ).json()
 
         return requests.get(
             f"{self.host}/api/lemmas/{self.lemma}{self.pos}{self.morpho}synsets/relations/?format=json",
-            timeout=(5.0, 30.0)
+            timeout=(10.0, 60.0)
         ).json()
 
 
@@ -195,7 +195,7 @@ class LatinWordNet:
     def lemmatize(self, form: str, pos: str = None):
         results = requests.get(
             f"{self.host}/lemmatize/{form}/{f'{pos}/' if pos else ''}?format=json",
-            timeout=(5.0, 30.0)
+            timeout=(10.0, 60.0)
         )
         return iter(results.json()) if results else []
 
@@ -203,7 +203,7 @@ class LatinWordNet:
         pos = f"{pos}/" if pos else ""
         results = requests.get(
             f"{self.host}/translate/{language}/{form}/{pos}?format=json",
-            timeout=(5.0, 30.0)
+            timeout=(10.0, 60.0)
         )
         return iter(results.json()) if results else []
 
@@ -225,12 +225,12 @@ class LatinWordNet:
 
         results = requests.get(
             f"{self.host}/api/index/{pos}{morpho}/?format=json",
-            timeout=(5.0, 30.0)
+            timeout=(10.0, 60.0)
         ).json()
         yield from results["results"]
 
         while results["next"]:
-            results = requests.get(results["next"], timeout=(5.0, 30.0)).json()
+            results = requests.get(results["next"], timeout=(10.0, 60.0)).json()
             yield from results["results"]
 
 
