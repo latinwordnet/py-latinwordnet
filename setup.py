@@ -11,13 +11,13 @@ requirements = [
 
 setup(
     name='latinwordnet',
-    version='0.1.3',
+    version='0.1.4',
     packages=find_packages(),
     url='https://latinwordnet.exeter.ac.uk',
     license='GNU General Public License v3.0',
     author='William Michael Short',
     author_email='w.short@exeter.ac.uk',
-    description='A light-weight Python wrapper for the Latin WordNet 2.0 API',
+    description='A light-weight Python wrapper for the Latin WordNet API',
     long_description=long_description,
     long_description_content_type='text/markdown',
     install_requires=requirements,

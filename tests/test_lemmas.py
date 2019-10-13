@@ -17,7 +17,7 @@ class TestIndex(unittest.TestCase):
         """Tear down test fixtures, if any."""
 
     def test_lemmas(self):
-        """Test the Latin WordNet 2.0 API (lemmas)."""
+        """Test the Latin WordNet API (lemmas)."""
 
         LWN = LatinWordNet()
         assert LWN.lemmas(lemma='virtus').get()[0]['uri'] == 'u0800'

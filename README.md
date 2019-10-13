@@ -1,9 +1,9 @@
 [![Build Status](https://travis-ci.org/wmshort/latinwordnet.svg?branch=master)](https://travis-ci.org/wmshort/latinwordnet)
 
-Latin WordNet 2.0 API
+Latin WordNet API
 =====================
 
-This module provides a light-weight wrapper for the Latin WordNet 2.0 API.
+This module provides a light-weight wrapper for the Latin WordNet API.
 
 Basic Usage
 -----------

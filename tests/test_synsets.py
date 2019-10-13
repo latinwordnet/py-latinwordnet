@@ -17,7 +17,7 @@ class TestIndex(unittest.TestCase):
         """Tear down test fixtures, if any."""
 
     def test_lemmas(self):
-        """Test the Latin WordNet 2.0 API (synsets)."""
+        """Test the Latin WordNet API (synsets)."""
 
         LWN = LatinWordNet()
         assert LWN.synsets(pos='n', offset='04349777').get()[0]['gloss'].startswith(

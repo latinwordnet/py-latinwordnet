@@ -18,7 +18,7 @@ class TestIndex(unittest.TestCase):
         """Tear down test fixtures, if any."""
 
     def test_index(self):
-        """Test the Latin WordNet 2.0 API (index)."""
+        """Test the Latin WordNet API (index)."""
 
         LWN = LatinWordNet()
         assert next(LWN.index())['lemma'] == 'Aaron'

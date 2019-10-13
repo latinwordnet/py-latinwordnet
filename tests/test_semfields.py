@@ -17,7 +17,7 @@ class TestIndex(unittest.TestCase):
         """Tear down test fixtures, if any."""
 
     def test_semfield(self):
-        """Test the Latin WordNet 2.0 API (semfields)."""
+        """Test the Latin WordNet API (semfields)."""
 
         LWN = LatinWordNet()
         assert LWN.semfields(code='611').get()[0]['english'].startswith('Human Anatomy')
