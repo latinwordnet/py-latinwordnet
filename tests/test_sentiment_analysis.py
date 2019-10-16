@@ -19,18 +19,19 @@ class TestIndex(unittest.TestCase):
     def test_lemmas(self):
         """Test the Latin WordNet API (sentiment analysis)."""
 
-        LWN = LatinWordNet()
-        assert LWN.sentiment_analysis('odiosus es mihi').json() == [
-            [
-                [
-                    {
-                        'lemma': 'odiosus', 'morpho': 'aps---mn1-', 'uri': 'o0512'
-                    },
-                    {
-                        'lemma': 'sum', 'morpho': 'v1spia--3-', 'uri': 's3436'
-                    }
-                ],
-                -0.207
-            ]
-        ]
+        # Requires authentication
+        # LWN = LatinWordNet(token='')
+        # assert LWN.sentiment_analysis('odiosus es mihi').json() == [
+        #     [
+        #         [
+        #             {
+        #                 'lemma': 'odiosus', 'morpho': 'aps---mn1-', 'uri': 'o0512'
+        #             },
+        #             {
+        #                 'lemma': 'sum', 'morpho': 'v1spia--3-', 'uri': 's3436'
+        #             }
+        #         ],
+        #         -0.207
+        #     ]
+        # ]
 
