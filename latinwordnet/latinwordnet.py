@@ -15,7 +15,7 @@ class Semfields:
             self.json = requests.get(
                 f"{self.host}/api/semfields/{self.code}/?format=json", auth=self.token,
                 timeout=(10.0, 60.0)
-            ).json()
+            ).json()['results']
         return self.json
 
     def search(self):
@@ -77,7 +77,6 @@ class Synsets:
             return self.json
 
     def search(self):
-        
         if self.gloss:
             return requests.get(
                 f"{self.host}/api/synsets?search={self.gloss}", auth=self.token,
@@ -95,6 +94,7 @@ class Synsets:
             f"{self.host}/api/synsets/{self.pos}{self.offset}lemmas/?format=json", auth=self.token,
             timeout=(10.0, 60.0)
         ).json()
+
 
     @property
     def relations(self):
@@ -133,11 +133,18 @@ class Lemmas:
                     timeout=(10.0, 60.0)
                 ).json()
             else:
-                self.json = requests.get(
-                    f"{self.host}/api/lemmas/{self.lemma}{self.pos}{self.morpho}?format=json",
-                    auth=self.token,
+                self.json = []
+                results = requests.get(
+                    f"{self.host}/api/lemmas/{self.lemma}{self.pos}{self.morpho}?format=json", auth=self.token,
                     timeout=(10.0, 60.0)
                 ).json()
+                if 'results' in results:
+                    self.json.extend(results["results"])
+                    while results["next"]:
+                        results = requests.get(results["next"], auth=self.token, timeout=(10.0, 60.0)).json()
+                        self.json.extend(results["results"])
+                else:
+                    self.json = [results, ]
         return self.json
 
     def search(self):
