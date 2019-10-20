@@ -11,7 +11,7 @@ requirements = [
 
 setup(
     name='latinwordnet',
-    version='0.1.5',
+    version='0.1.6',
     packages=find_packages(),
     url='https://latinwordnet.exeter.ac.uk',
     license='GNU General Public License v3.0',
