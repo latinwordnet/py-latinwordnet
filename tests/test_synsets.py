@@ -24,7 +24,7 @@ class TestIndex(unittest.TestCase):
             'possession of the qualities'
         )
         assert LWN.synsets(pos='n', offset='04349777').lemmas
-        assert 'antonyms' in LWN.synsets(pos='n', offset='04349777').relations
+        assert '!' in LWN.synsets(pos='n', offset='04349777').relations
         assert len(LWN.synsets(pos='p').get()) > 3
         assert LWN.synsets(pos='n', offset='04349777').sentiment['objectivity'] == 0.75
         assert LWN.synsets(gloss='warfare').search()

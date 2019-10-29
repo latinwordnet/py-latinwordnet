@@ -10,10 +10,18 @@ class Semfields:
         self.json = None
         self.token = token
 
+    def get_auth(self):
+        t = self.get_token()
+        if t:
+            return {'Authorization': f'Token {t}'}
+
+    def get_token(self):
+        return self.token
+
     def get(self):
         if self.json is None:
             self.json = requests.get(
-                f"{self.host}/api/semfields/{self.code}/?format=json", auth=self.token,
+                f"{self.host}/api/semfields/{self.code}/?format=json", headers=self.get_auth(),
                 timeout=(10.0, 60.0)
             ).json()['results']
         return self.json
@@ -21,7 +29,7 @@ class Semfields:
     def search(self):
         if self.english:
             return requests.get(
-                f"{self.host}/api/semfields?search={self.english}", auth=self.token,
+                f"{self.host}/api/semfields?search={self.english}", headers=self.get_auth(),
                 timeout=(10.0, 60.0)
             ).json()["results"]
         else:
@@ -32,22 +40,20 @@ class Semfields:
 
     @property
     def lemmas(self):
-        
         return iter(
             requests.get(
-                f"{self.host}/api/semfields/{self.code}/lemmas/?format=json", auth=self.token,
+                f"{self.host}/api/semfields/{self.code}/lemmas/?format=json", headers=self.get_auth(),
                 timeout=(10.0, 60.0)
-            ).json()
+            ).json()["results"]
         )
 
     @property
     def synsets(self):
-        
         return iter(
             requests.get(
-                f"{self.host}/api/semfields/{self.code}/synsets/?format=json", auth=self.token,
+                f"{self.host}/api/semfields/{self.code}/synsets/?format=json", headers=self.get_auth(),
                 timeout=(10.0, 60.0)
-            ).json()
+            ).json()["results"]
         )
 
 
@@ -60,26 +66,33 @@ class Synsets:
         self.json = None
         self.token = token
 
+    def get_auth(self):
+        t = self.get_token()
+        if t:
+            return {'Authorization': f'Token {t}'}
+
+    def get_token(self):
+        return self.token
+
     def get(self):
         if self.json is None:
             self.json = []
             results = requests.get(
-                f"{self.host}/api/synsets/{self.pos}{self.offset}?format=json", auth=self.token,
+                f"{self.host}/api/synsets/{self.pos}{self.offset}?format=json", headers=self.get_auth(),
                 timeout=(10.0, 60.0)
             ).json()
-            if 'results' in results:
+            while results:
                 self.json.extend(results["results"])
-                while results["next"]:
-                    results = requests.get(results["next"], auth=self.token, timeout=(10.0, 60.0)).json()
-                    self.json.extend(results["results"])
-            else:
-                self.json = [results,]
+                if results["next"]:
+                    results = requests.get(results["next"], headers=self.get_auth(), timeout=(10.0, 60.0)).json()
+                else:
+                    results = None
             return self.json
 
     def search(self):
         if self.gloss:
             return requests.get(
-                f"{self.host}/api/synsets?search={self.gloss}", auth=self.token,
+                f"{self.host}/api/synsets?search={self.gloss}", headers=self.get_auth(),
                 timeout=(10.0, 60.0)
             ).json()["results"]
         else:
@@ -91,27 +104,32 @@ class Synsets:
     @property
     def lemmas(self):
         return requests.get(
-            f"{self.host}/api/synsets/{self.pos}{self.offset}lemmas/?format=json", auth=self.token,
+            f"{self.host}/api/synsets/{self.pos}{self.offset}lemmas/?format=json", headers=self.get_auth(),
             timeout=(10.0, 60.0)
         ).json()
 
 
     @property
     def relations(self):
-        
-        return requests.get(
+        results = requests.get(
             f"{self.host}/api/synsets/{self.pos}{self.offset}relations/?format=json",
-            auth=self.token,
+            headers=self.get_auth(),
             timeout=(10.0, 60.0)
-        ).json()["relations"]
+        )
+        if results:
+            data = results.json()["results"]
+            return data[0]["relations"]
 
     @property
     def sentiment(self):
-        return requests.get(
+        results = requests.get(
             f"{self.host}/api/synsets/{self.pos}{self.offset}sentiment/?format=json",
-            auth=self.token,
+            headers=self.get_auth(),
             timeout=(10.0, 60.0)
-        ).json()["sentiment"]
+        )
+        if results:
+            data = results.json()['results'][0]
+            return data["sentiment"]
 
 
 class Lemmas:
@@ -124,40 +142,49 @@ class Lemmas:
         self.json = None
         self.token = token
 
+    def get_auth(self):
+        t = self.get_token()
+        if t:
+            return {'Authorization': f'Token {t}'}
+
+    def get_token(self):
+        return self.token
+    
     def get(self):
         if self.json is None:
             if self.uri is not None:
                 self.json = requests.get(
                     f"{self.host}/api/uri/{self.uri}?format=json",
-                    auth=self.token,
+                    headers=self.get_auth(),
                     timeout=(10.0, 60.0)
-                ).json()
+                ).json()["results"]
             else:
                 self.json = []
                 results = requests.get(
-                    f"{self.host}/api/lemmas/{self.lemma}{self.pos}{self.morpho}?format=json", auth=self.token,
+                    f"{self.host}/api/lemmas/{self.lemma}{self.pos}{self.morpho}?format=json", headers=self.get_auth(),
                     timeout=(10.0, 60.0)
                 ).json()
-                if 'results' in results:
+                while results:
                     self.json.extend(results["results"])
-                    while results["next"]:
-                        results = requests.get(results["next"], auth=self.token, timeout=(10.0, 60.0)).json()
-                        self.json.extend(results["results"])
-                else:
-                    self.json = [results, ]
+                    if results["next"]:
+                        results = requests.get(results["next"], headers=self.get_auth(), timeout=(10.0, 60.0)).json()
+                    else:
+                        results = None
         return self.json
 
     def search(self):
         if self.lemma:
             results = self.json = requests.get(
                 f"{self.host}/api/lemmas/?search={self.lemma.strip('/')}",
-                auth=self.token,
+                headers=self.get_auth(),
                 timeout=(10.0, 60.0)
                 ).json()
-            yield from results["results"]
-            while results["next"]:
-                results = requests.get(results["next"], auth=self.token, timeout=(10.0, 60.0)).json()
+            while results:
                 yield from results["results"]
+                if results["next"]:
+                    results = requests.get(results["next"], headers=self.get_auth(), timeout=(10.0, 60.0)).json()
+                else:
+                    results = None
 
     def __iter__(self):
         return iter(self.get())
@@ -165,46 +192,47 @@ class Lemmas:
     @property
     def synsets(self):
         if self.uri is not None:
-            return requests.get(
+            results = requests.get(
                 f"{self.host}/api/uri/{self.uri}/synsets/?format=json",
-                auth=self.token,
+                headers=self.get_auth(),
                 timeout=(10.0, 60.0)
-            ).json()
+            ).json()["results"]
         else:
-            return requests.get(
+            results = requests.get(
                 f"{self.host}/api/lemmas/{self.lemma}{self.pos}{self.morpho}synsets/?format=json",
-                auth=self.token,
+                headers=self.get_auth(),
                 timeout=(10.0, 60.0)
-            ).json()
+            ).json()["results"]
+        return results
 
     @property
     def relations(self):
         if self.uri is not None:
             return requests.get(
                 f"{self.host}/api/uri/{self.uri}/relations/?format=json",
-                auth=self.token,
+                headers=self.get_auth(),
                 timeout=(10.0, 60.0)
-            ).json()
+            ).json()["results"]
         else:
             return requests.get(
                 f"{self.host}/api/lemmas/{self.lemma}{self.pos}{self.morpho}relations/?format=json",
-                auth=self.token,
+                headers=self.get_auth(),
                 timeout=(10.0, 60.0)
-            ).json()
+            ).json()["results"]
 
     @property
     def synsets_relations(self):
         if self.uri is not None:
             return requests.get(
                 f"{self.host}/api/uri/{self.uri}/synsets/relations/?format=json",
-                auth=self.token,
+                headers=self.get_auth(),
                 timeout=(10.0, 60.0)
-            ).json()
+            ).json()["results"]
         return requests.get(
             f"{self.host}/api/lemmas/{self.lemma}{self.pos}{self.morpho}synsets/relations/?format=json",
-            auth=self.token,
+            headers=self.get_auth(),
             timeout=(10.0, 60.0)
-        ).json()
+        ).json()["results"]
 
 
 class LatinWordNet:
@@ -214,7 +242,7 @@ class LatinWordNet:
 
     def lemmatize(self, form: str, pos: str = None):
         results = requests.get(
-            f"{self.host}/lemmatize/{form}/{f'{pos}/' if pos else ''}?format=json", auth=self.token,
+            f"{self.host}/lemmatize/{form}/{f'{pos}/' if pos else ''}?format=json", headers=self.get_auth(),
             timeout=(10.0, 60.0)
         )
         return iter(results.json()) if results else []
@@ -222,7 +250,7 @@ class LatinWordNet:
     def translate(self, language: str, form: str, pos: str = "*"):
         pos = f"{pos}/" if pos else ""
         results = requests.get(
-            f"{self.host}/translate/{language}/{form}/{pos}?format=json", auth=self.token,
+            f"{self.host}/translate/{language}/{form}/{pos}?format=json", headers=self.get_auth(),
             timeout=(10.0, 60.0)
         )
         return iter(results.json()) if results else []
@@ -242,7 +270,7 @@ class LatinWordNet:
             data['weighting'] = weighting
         if excluded:
             data['excluded'] = excluded
-        results = requests.post(f"{self.host}/sentiment/", data=data, auth=self.token, verify=True)
+        results = requests.post(f"{self.host}/sentiment/", data=data, headers=self.get_auth(), verify=True)
         return results
 
     def lemmas(self, lemma=None, pos=None, morpho=None):
@@ -261,13 +289,20 @@ class LatinWordNet:
         pos = f"{pos}/" if pos else "*/"
         morpho = f"{morpho}/" if morpho else ""
         results = requests.get(
-            f"{self.host}/api/index/{pos}{morpho}/?format=json", auth=self.token,
+            f"{self.host}/api/index/{pos}{morpho}/?format=json", headers=self.get_auth(),
             timeout=(10.0, 60.0)
         ).json()
-        yield from results["results"]
-        while results["next"]:
-            results = requests.get(results["next"], auth=self.token, timeout=(10.0, 60.0)).json()
+        while results:
             yield from results["results"]
+            if results["next"]:
+                results = requests.get(results["next"], headers=self.get_auth(), timeout=(10.0, 60.0)).json()
+            else:
+                results = None
+
+    def get_auth(self):
+        t = self.get_token()
+        if t:
+            return {'Authorization': f'Token {t}'}
 
     def get_token(self):
         return self.token

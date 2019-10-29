@@ -20,11 +20,8 @@ class TestIndex(unittest.TestCase):
         """Test the Latin WordNet API (lemmas)."""
 
         LWN = LatinWordNet()
-        assert LWN.lemmas(lemma='virtus').get()[0]['uri'] == 'u0800'
-        assert len(LWN.lemmas(pos='n').get()) > 30000
-        assert len(LWN.lemmas(morpho='rp--------').get()) > 4000
+        assert LWN.lemmas(lemma='uirtus').get()[0]['uri'] == 'u0800'
         assert LWN.lemmas_by_uri('u0800').get()[0]['lemma'] == 'uirtus'
         assert next(LWN.lemmas(lemma='bula').search())['lemma'] == 'adfabulatio'
-        assert LWN.lemmas(lemma='virtus').synsets
-        assert LWN.lemmas(lemma='virtus').relations
-        LWN.lemmas(lemma='uirtus').synsets_relations
+        assert LWN.lemmas(lemma='uirtus').synsets
+        assert LWN.lemmas(lemma='uirtus').relations
