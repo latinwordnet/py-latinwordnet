@@ -1,5 +1,28 @@
 """A light-weight wrapper for the Latin WordNet API"""
+
 import requests
+from requests.adapters import HTTPAdapter
+from requests.packages.urllib3.util.retry import Retry
+
+
+def retry(
+        retries=3,
+        backoff_factor=0.3,
+        status_forcelist=(500, 502, 504),
+        session=None,
+):
+    session = session or requests.Session()
+    retry = Retry(
+        total=retries,
+        read=retries,
+        connect=retries,
+        backoff_factor=backoff_factor,
+        status_forcelist=status_forcelist,
+    )
+    adapter = HTTPAdapter(max_retries=retry)
+    session.mount('http://', adapter)
+    session.mount('https://', adapter)
+    return session
 
 
 class Semfields:
@@ -20,7 +43,7 @@ class Semfields:
 
     def get(self):
         if self.json is None:
-            self.json = requests.get(
+            self.json = retry().get(
                 f"{self.host}/api/semfields/{self.code}/?format=json", headers=self.get_auth(),
                 timeout=(10.0, 60.0)
             ).json()['results']
@@ -28,7 +51,7 @@ class Semfields:
 
     def search(self):
         if self.english:
-            return requests.get(
+            return retry().get(
                 f"{self.host}/api/semfields?search={self.english}", headers=self.get_auth(),
                 timeout=(10.0, 60.0)
             ).json()["results"]
@@ -41,7 +64,7 @@ class Semfields:
     @property
     def lemmas(self):
         return iter(
-            requests.get(
+            retry().get(
                 f"{self.host}/api/semfields/{self.code}/lemmas/?format=json", headers=self.get_auth(),
                 timeout=(10.0, 60.0)
             ).json()["results"]
@@ -50,7 +73,7 @@ class Semfields:
     @property
     def synsets(self):
         return iter(
-            requests.get(
+            retry().get(
                 f"{self.host}/api/semfields/{self.code}/synsets/?format=json", headers=self.get_auth(),
                 timeout=(10.0, 60.0)
             ).json()["results"]
@@ -77,21 +100,21 @@ class Synsets:
     def get(self):
         if self.json is None:
             self.json = []
-            results = requests.get(
+            results = retry().get(
                 f"{self.host}/api/synsets/{self.pos}{self.offset}?format=json", headers=self.get_auth(),
                 timeout=(10.0, 60.0)
             ).json()
             while results:
                 self.json.extend(results["results"])
                 if results["next"]:
-                    results = requests.get(results["next"], headers=self.get_auth(), timeout=(10.0, 60.0)).json()
+                    results = retry().get(results["next"], headers=self.get_auth(), timeout=(10.0, 60.0)).json()
                 else:
                     results = None
             return self.json
 
     def search(self):
         if self.gloss:
-            return requests.get(
+            return retry().get(
                 f"{self.host}/api/synsets?search={self.gloss}", headers=self.get_auth(),
                 timeout=(10.0, 60.0)
             ).json()["results"]
@@ -103,7 +126,7 @@ class Synsets:
 
     @property
     def lemmas(self):
-        return requests.get(
+        return retry().get(
             f"{self.host}/api/synsets/{self.pos}{self.offset}lemmas/?format=json", headers=self.get_auth(),
             timeout=(10.0, 60.0)
         ).json()["results"]
@@ -111,7 +134,7 @@ class Synsets:
 
     @property
     def relations(self):
-        results = requests.get(
+        results = retry().get(
             f"{self.host}/api/synsets/{self.pos}{self.offset}relations/?format=json",
             headers=self.get_auth(),
             timeout=(10.0, 60.0)
@@ -122,7 +145,7 @@ class Synsets:
 
     @property
     def sentiment(self):
-        results = requests.get(
+        results = retry().get(
             f"{self.host}/api/synsets/{self.pos}{self.offset}sentiment/?format=json",
             headers=self.get_auth(),
             timeout=(10.0, 60.0)
@@ -153,28 +176,28 @@ class Lemmas:
     def get(self):
         if self.json is None:
             if self.uri is not None:
-                self.json = requests.get(
+                self.json = retry().get(
                     f"{self.host}/api/uri/{self.uri}?format=json",
                     headers=self.get_auth(),
                     timeout=(10.0, 60.0)
                 ).json()["results"]
             else:
                 self.json = []
-                results = requests.get(
+                results = retry().get(
                     f"{self.host}/api/lemmas/{self.lemma}{self.pos}{self.morpho}?format=json", headers=self.get_auth(),
                     timeout=(10.0, 60.0)
                 ).json()
                 while results:
                     self.json.extend(results["results"])
                     if results["next"]:
-                        results = requests.get(results["next"], headers=self.get_auth(), timeout=(10.0, 60.0)).json()
+                        results = retry().get(results["next"], headers=self.get_auth(), timeout=(10.0, 60.0)).json()
                     else:
                         results = None
         return self.json
 
     def search(self):
         if self.lemma:
-            results = self.json = requests.get(
+            results = self.json = retry().get(
                 f"{self.host}/api/lemmas/?search={self.lemma.strip('/')}",
                 headers=self.get_auth(),
                 timeout=(10.0, 60.0)
@@ -182,7 +205,7 @@ class Lemmas:
             while results:
                 yield from results["results"]
                 if results["next"]:
-                    results = requests.get(results["next"], headers=self.get_auth(), timeout=(10.0, 60.0)).json()
+                    results = retry().get(results["next"], headers=self.get_auth(), timeout=(10.0, 60.0)).json()
                 else:
                     results = None
 
@@ -192,13 +215,13 @@ class Lemmas:
     @property
     def synsets(self):
         if self.uri is not None:
-            results = requests.get(
+            results = retry().get(
                 f"{self.host}/api/uri/{self.uri}/synsets/?format=json",
                 headers=self.get_auth(),
                 timeout=(10.0, 60.0)
             ).json()["results"]
         else:
-            results = requests.get(
+            results = retry().get(
                 f"{self.host}/api/lemmas/{self.lemma}{self.pos}{self.morpho}synsets/?format=json",
                 headers=self.get_auth(),
                 timeout=(10.0, 60.0)
@@ -208,13 +231,13 @@ class Lemmas:
     @property
     def relations(self):
         if self.uri is not None:
-            return requests.get(
+            return retry().get(
                 f"{self.host}/api/uri/{self.uri}/relations/?format=json",
                 headers=self.get_auth(),
                 timeout=(10.0, 60.0)
             ).json()["results"]
         else:
-            return requests.get(
+            return retry().get(
                 f"{self.host}/api/lemmas/{self.lemma}{self.pos}{self.morpho}relations/?format=json",
                 headers=self.get_auth(),
                 timeout=(10.0, 60.0)
@@ -223,12 +246,12 @@ class Lemmas:
     @property
     def synsets_relations(self):
         if self.uri is not None:
-            return requests.get(
+            return retry().get(
                 f"{self.host}/api/uri/{self.uri}/synsets/relations/?format=json",
                 headers=self.get_auth(),
                 timeout=(10.0, 60.0)
             ).json()["results"]
-        return requests.get(
+        return retry().get(
             f"{self.host}/api/lemmas/{self.lemma}{self.pos}{self.morpho}synsets/relations/?format=json",
             headers=self.get_auth(),
             timeout=(10.0, 60.0)
@@ -241,7 +264,7 @@ class LatinWordNet:
         self.token = token
 
     def lemmatize(self, form: str, pos: str = None):
-        results = requests.get(
+        results = retry().get(
             f"{self.host}/lemmatize/{form}/{f'{pos}/' if pos else ''}?format=json", headers=self.get_auth(),
             timeout=(10.0, 60.0)
         )
@@ -249,7 +272,7 @@ class LatinWordNet:
 
     def translate(self, language: str, form: str, pos: str = "*"):
         pos = f"{pos}/" if pos else ""
-        results = requests.get(
+        results = retry().get(
             f"{self.host}/translate/{language}/{form}/{pos}?format=json", headers=self.get_auth(),
             timeout=(10.0, 60.0)
         )
@@ -288,14 +311,14 @@ class LatinWordNet:
     def index(self, pos=None, morpho=None):
         pos = f"{pos}/" if pos else "*/"
         morpho = f"{morpho}/" if morpho else ""
-        results = requests.get(
+        results = retry().get(
             f"{self.host}/api/index/{pos}{morpho}/?format=json", headers=self.get_auth(),
             timeout=(10.0, 60.0)
         ).json()
         while results:
             yield from results["results"]
             if results["next"]:
-                results = requests.get(results["next"], headers=self.get_auth(), timeout=(10.0, 60.0)).json()
+                results = retry().get(results["next"], headers=self.get_auth(), timeout=(10.0, 60.0)).json()
             else:
                 results = None
 
