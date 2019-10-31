@@ -106,7 +106,7 @@ class Synsets:
         return requests.get(
             f"{self.host}/api/synsets/{self.pos}{self.offset}lemmas/?format=json", headers=self.get_auth(),
             timeout=(10.0, 60.0)
-        ).json()
+        ).json()["results"]
 
 
     @property
