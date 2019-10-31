@@ -223,14 +223,14 @@ class LatinWordNet:
         self.host = host.rstrip("/")
         self.token = token
 
-    @lru_cache
+    @lru_cache(maxsize=None)
     def lemmatize(self, form: str, pos: str = None):
         results = requests.get(
             f"{self.host}/lemmatize/{form}/{f'{pos}/' if pos else ''}?format=json", headers=self.get_auth()
         )
         return iter(results.json()) if results else []
 
-    @lru_cache
+    @lru_cache(maxsize=None)
     def translate(self, language: str, form: str, pos: str = "*"):
         pos = f"{pos}/" if pos else ""
         results = requests.get(
@@ -238,7 +238,7 @@ class LatinWordNet:
         )
         return iter(results.json()) if results else []
 
-    @lru_cache
+    @lru_cache(maxsize=None)
     def sentiment_analysis(self, text, weighting=None, excluded=None):
         """
         :param text: The string to be analyzed.
@@ -257,23 +257,23 @@ class LatinWordNet:
         results = requests.post(f"{self.host}/sentiment/", data=data, headers=self.get_auth(), verify=True)
         return results
 
-    @lru_cache
+    @lru_cache(maxsize=None)
     def lemmas(self, lemma=None, pos=None, morpho=None):
         return Lemmas(self.host, lemma, pos, morpho)
 
-    @lru_cache
+    @lru_cache(maxsize=None)
     def lemmas_by_uri(self, uri):
         return Lemmas(self.host, uri=uri)
 
-    @lru_cache
+    @lru_cache(maxsize=None)
     def synsets(self, pos: str = None, offset: str = None, gloss: str = None):
         return Synsets(self.host, pos, offset, gloss)
 
-    @lru_cache
+    @lru_cache(maxsize=None)
     def semfields(self, code: str = None, english: str = None):
         return Semfields(self.host, code, english)
 
-    @lru_cache
+    @lru_cache(maxsize=None)
     def index(self, pos=None, morpho=None):
         pos = f"{pos}/" if pos else "*/"
         morpho = f"{morpho}/" if morpho else ""
