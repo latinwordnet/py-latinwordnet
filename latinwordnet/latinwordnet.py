@@ -3,6 +3,7 @@
 import requests
 from functools import lru_cache
 
+
 class Semfields:
     def __init__(self, session, host, code=None, english=None, token=None):
         self.session = session
@@ -12,19 +13,11 @@ class Semfields:
         self.json = None
         self.token = token
 
-    def get_auth(self):
-        t = self.get_token()
-        if t:
-            return {'Authorization': f'Token {t}'}
-
-    def get_token(self):
-        return self.token
-
     def get(self):
         if self.json is None:
             self.json = self.session.get(
                 f"{self.host}/api/semfields/{self.code}/?format=json"
-            ).json()['results']
+            ).json()["results"]
         return self.json
 
     def search(self):
@@ -40,14 +33,22 @@ class Semfields:
 
     @property
     def lemmas(self):
+        return self._lemmas(self.host, self.code)
+
+    @lru_cache(maxsize=None)
+    def _lemmas(self, host, code):
         return iter(
             self.session.get(
-                f"{self.host}/api/semfields/{self.code}/lemmas/?format=json",
+                f"{host}/api/semfields/{code}/lemmas/?format=json",
             ).json()["results"]
         )
 
     @property
     def synsets(self):
+        return self._synsets(self.host, self.code)
+
+    @lru_cache(maxsize=None)
+    def _synsets(self, host, code):
         return iter(
             self.session.get(
                 f"{self.host}/api/semfields/{self.code}/synsets/?format=json",
@@ -64,14 +65,6 @@ class Synsets:
         self.gloss = gloss
         self.json = None
         self.token = token
-
-    def get_auth(self):
-        t = self.get_token()
-        if t:
-            return {'Authorization': f'Token {t}'}
-
-    def get_token(self):
-        return self.token
 
     def get(self):
         if self.json is None:
@@ -100,15 +93,22 @@ class Synsets:
 
     @property
     def lemmas(self):
-        return self.session.get(
-            f"{self.host}/api/synsets/{self.pos}{self.offset}lemmas/?format=json"
-        ).json()["results"]
+        return self._lemmas(self.host, self.pos, self.offset)
 
+    @lru_cache(maxsize=None)
+    def _lemmas(self, host, pos, offset):
+        return self.session.get(
+            f"{host}/api/synsets/{pos}{offset}lemmas/?format=json"
+        ).json()["results"]
 
     @property
     def relations(self):
+        return self._relations(self.host, self.pos, self.offset)
+
+    @lru_cache(maxsize=None)
+    def _relations(self, host, pos, offset):
         results = self.session.get(
-            f"{self.host}/api/synsets/{self.pos}{self.offset}relations/?format=json"
+            f"{host}/api/synsets/{pos}{offset}relations/?format=json"
         )
         if results:
             data = results.json()["results"]
@@ -120,12 +120,14 @@ class Synsets:
             f"{self.host}/api/synsets/{self.pos}{self.offset}sentiment/?format=json"
         )
         if results:
-            data = results.json()['results'][0]
+            data = results.json()["results"][0]
             return data["sentiment"]
 
 
 class Lemmas:
-    def __init__(self, session, host, lemma=None, pos=None, morpho=None, uri=None, token=None):
+    def __init__(
+            self, session, host, lemma=None, pos=None, morpho=None, uri=None, token=None
+    ):
         self.session = session
         self.host = host
         self.lemma = f"{lemma}/" if lemma else "*/"
@@ -135,14 +137,6 @@ class Lemmas:
         self.json = None
         self.token = token
 
-    def get_auth(self):
-        t = self.get_token()
-        if t:
-            return {'Authorization': f'Token {t}'}
-
-    def get_token(self):
-        return self.token
-    
     def get(self):
         if self.json is None:
             if self.uri is not None:
@@ -166,7 +160,7 @@ class Lemmas:
         if self.lemma:
             results = self.json = self.session.get(
                 f"{self.host}/api/lemmas/?search={self.lemma.strip('/')}"
-                ).json()
+            ).json()
             while results:
                 yield from results["results"]
                 if results["next"]:
@@ -180,34 +174,67 @@ class Lemmas:
     @property
     def synsets(self):
         if self.uri is not None:
+            return self._synsets(
+                self.host, lemma=None, pos=None, morpho=None, uri=self.uri
+            )
+        else:
+            return self._synsets(
+                self.host, lemma=self.lemma, pos=self.pos, morpho=self.morpho, uri=None
+            )
+
+    @lru_cache(maxsize=None)
+    def _synsets(self, host, lemma, pos, morpho, uri):
+        if uri is not None:
             results = self.session.get(
-                f"{self.host}/api/uri/{self.uri}/synsets/?format=json"
+                f"{host}/api/uri/{uri}/synsets/?format=json"
             ).json()["results"]
         else:
             results = self.session.get(
-                f"{self.host}/api/lemmas/{self.lemma}{self.pos}{self.morpho}synsets/?format=json"
+                f"{host}/api/lemmas/{lemma}{pos}{morpho}synsets/?format=json"
             ).json()["results"]
         return results
 
     @property
     def relations(self):
         if self.uri is not None:
+            return self._relations(
+                self.host, lemma=None, pos=None, morpho=None, uri=self.uri
+            )
+        else:
+            return self._relations(
+                self.host, lemma=self.lemma, pos=self.pos, morpho=self.morpho, uri=None
+            )
+
+    @lru_cache(maxsize=None)
+    def _relations(self, host, lemma, pos, morpho, uri):
+        if uri is not None:
             return self.session.get(
-                f"{self.host}/api/uri/{self.uri}/relations/?format=json"
+                f"{host}/api/uri/{uri}/relations/?format=json"
             ).json()["results"]
         else:
             return self.session.get(
-                f"{self.host}/api/lemmas/{self.lemma}{self.pos}{self.morpho}relations/?format=json"
+                f"{host}/api/lemmas/{lemma}{pos}{morpho}relations/?format=json"
             ).json()["results"]
 
     @property
     def synsets_relations(self):
         if self.uri is not None:
+            return self._synsets_relations(
+                self.host, lemma=None, pos=None, morpho=None, uri=self.uri
+            )
+        else:
+            return self._synsets_relations(
+                self.host, lemma=self.lemma, pos=self.pos, morpho=self.morpho, uri=None
+            )
+
+    @lru_cache(maxsize=None)
+    def _synsets_relations(self, host, lemma, pos, morpho, uri):
+        if uri is not None:
             return self.session.get(
-                f"{self.host}/api/uri/{self.uri}/synsets/relations/?format=json"
+                f"{host}/api/uri/{uri}/synsets/relations/?format=json"
             ).json()["results"]
         return self.session.get(
-            f"{self.host}/api/lemmas/{self.lemma}{self.pos}{self.morpho}synsets/relations/?format=json"
+            f"{host}/api/lemmas/{lemma}{pos}{morpho}synsets/relations/?format=json"
         ).json()["results"]
 
 
@@ -241,14 +268,14 @@ class LatinWordNet:
         :param excluded: List of 3-uples consisting of ('lemma', 'morpho', 'uri') to be excluded from analysis
         :return: List of possible analyses with scores
         """
-        
+
         data = {
-                'text': text,
+            "text": text,
         }
         if weighting:
-            data['weighting'] = weighting
+            data["weighting"] = weighting
         if excluded:
-            data['excluded'] = excluded
+            data["excluded"] = excluded
         results = self.session.post(f"{self.host}/sentiment/", data=data, verify=True)
         return results
 
@@ -283,34 +310,39 @@ class LatinWordNet:
                 results = None
 
     def obtain_auth_token(self, username, password):
-        results = self.session.post(f"{self.host}/api-token-auth/", data={'username': username, 'password': password},
-                                    verify=True)
+        results = self.session.post(
+            f"{self.host}/api-token-auth/",
+            data={"username": username, "password": password},
+            verify=True,
+        )
         if results:
-            self.session.headers.update({'Authorization': f'Token {results.json()["token"]}'})
+            self.session.headers.update(
+                {"Authorization": f'Token {results.json()["token"]}'}
+            )
 
 
 relation_types = {
-    '!': 'antonyms',
-    '@': 'hypernyms',
-    '~': 'hyponyms',
-    '#m': 'member-of',
-    '#s': 'substance-of',
-    '#p': 'part-of',
-    '%m': 'has-member',
-    '%s': 'has-substance',
-    '%p': 'has-part',
-    '=': 'attribute-of',
-    '|': 'nearest',
-    '+r': 'has-role',
-    '-r': 'is-role-of',
-    '*': 'entails',
-    '>': 'causes',
-    '^': 'also-see',
-    '$': 'verb-group',
-    '&': 'similar-to',
-    '<': 'participle',
-    '+c': 'composed-of',
-    '-c': 'composes',
-    '\\': 'derived-from',
-    '/': 'related-to',
-    }
+    "!":  "antonyms",
+    "@":  "hypernyms",
+    "~":  "hyponyms",
+    "#m": "member-of",
+    "#s": "substance-of",
+    "#p": "part-of",
+    "%m": "has-member",
+    "%s": "has-substance",
+    "%p": "has-part",
+    "=":  "attribute-of",
+    "|":  "nearest",
+    "+r": "has-role",
+    "-r": "is-role-of",
+    "*":  "entails",
+    ">":  "causes",
+    "^":  "also-see",
+    "$":  "verb-group",
+    "&":  "similar-to",
+    "<":  "participle",
+    "+c": "composed-of",
+    "-c": "composes",
+    "\\": "derived-from",
+    "/":  "related-to",
+}
