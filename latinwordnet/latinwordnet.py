@@ -37,11 +37,9 @@ class Semfields:
 
     @lru_cache(maxsize=None)
     def _lemmas(self, host, code):
-        return iter(
-            self.session.get(
-                f"{host}/api/semfields/{code}/lemmas/?format=json",
-            ).json()["results"]
-        )
+        return self.session.get(
+            f"{host}/api/semfields/{code}/lemmas/?format=json",
+        ).json()["results"]
 
     @property
     def synsets(self):
@@ -49,11 +47,9 @@ class Semfields:
 
     @lru_cache(maxsize=None)
     def _synsets(self, host, code):
-        return iter(
-            self.session.get(
-                f"{self.host}/api/semfields/{self.code}/synsets/?format=json",
-            ).json()["results"]
-        )
+        return self.session.get(
+            f"{self.host}/api/semfields/{self.code}/synsets/?format=json",
+        ).json()["results"]
 
 
 class Synsets:
@@ -250,7 +246,7 @@ class LatinWordNet:
         results = self.session.get(
             f"{self.host}/lemmatize/{form}/{f'{pos}/' if pos else ''}?format=json"
         )
-        return iter(results.json()) if results else []
+        return results.json() if results else []
 
     @lru_cache(maxsize=None)
     def translate(self, language: str, form: str, pos: str = "*"):
@@ -258,7 +254,7 @@ class LatinWordNet:
         results = self.session.get(
             f"{self.host}/translate/{language}/{form}/{pos}?format=json"
         )
-        return iter(results.json()) if results else []
+        return results.json() if results else []
 
     @lru_cache(maxsize=None)
     def sentiment_analysis(self, text, weighting=None, excluded=None):

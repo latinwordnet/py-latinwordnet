@@ -20,6 +20,7 @@ class TestIndex(unittest.TestCase):
         """Test the Latin WordNet API (other)."""
 
         LWN = LatinWordNet()
+        print(next(LWN.lemmatize('virtutem')))['lemma']['lemma']
         assert next(LWN.lemmatize('virtutem'))['lemma']['lemma'] == 'uirtus'
         assert next(LWN.lemmatize('dicas', 'n'))['lemma']['morpho'] == 'n-s---fn1-'
         assert next(LWN.lemmatize('dicas', 'v1spia--3-'))['lemma']['uri'] == 'd1350'
