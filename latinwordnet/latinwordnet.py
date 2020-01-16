@@ -271,7 +271,7 @@ class LatinWordNet:
             data["weighting"] = weighting
         if excluded:
             data["excluded"] = excluded
-        results = self.session.post(f"{self.host}/sentiment/", data=data, verify=True)
+        results = self.session.post(f"{self.host}/sentiment/", json=data, verify=True)
         return results.json()
 
     @lru_cache(maxsize=None)
