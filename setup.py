@@ -10,7 +10,7 @@ requirements = [
 
 setup(
     name="latinwordnet",
-    version="0.2.7",
+    version="0.2.8",
     packages=find_packages(),
     url="https://github.com/wmshort/latinwordnet",
     license="GNU General Public License v3.0",

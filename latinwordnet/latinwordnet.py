@@ -256,7 +256,6 @@ class LatinWordNet:
         )
         return results.json() if results else []
 
-    @lru_cache(maxsize=None)
     def sentiment_analysis(self, text: str, weighting: str = None, excluded: list = None):
         """
         :param text: The string to be analyzed.
