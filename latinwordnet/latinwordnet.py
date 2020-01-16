@@ -257,11 +257,11 @@ class LatinWordNet:
         return results.json() if results else []
 
     @lru_cache(maxsize=None)
-    def sentiment_analysis(self, text, weighting=None, excluded=None):
+    def sentiment_analysis(self, text: str, weighting: str = None, excluded: list = None):
         """
         :param text: The string to be analyzed.
         :param weighting: 'average', 'harmonic' or 'geometric'
-        :param excluded: List of 3-uples consisting of ('lemma', 'morpho', 'uri') to be excluded from analysis
+        :param excluded: List of dicts consisting of keys 'lemma', 'morpho', 'uri' to be excluded from analysis
         :return: List of possible analyses with scores
         """
 
@@ -273,7 +273,7 @@ class LatinWordNet:
         if excluded:
             data["excluded"] = excluded
         results = self.session.post(f"{self.host}/sentiment/", data=data, verify=True)
-        return results
+        return results.json()
 
     @lru_cache(maxsize=None)
     def lemmas(self, lemma=None, pos=None, morpho=None):
