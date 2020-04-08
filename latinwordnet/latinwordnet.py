@@ -1,7 +1,13 @@
 """A light-weight wrapper for the Latin WordNet API"""
 
-import requests
+import os
 from functools import lru_cache
+
+import requests
+from dotenv import load_dotenv
+
+load_dotenv()
+LATINWORDNET_TOKEN = os.getenv("LATINWORDNET_TOKEN", None)
 
 
 class Semfields:
@@ -237,7 +243,7 @@ class Lemmas:
 class LatinWordNet:
     def __init__(self, host="https://latinwordnet.exeter.ac.uk", token=None):
         self.host = host.rstrip("/")
-        self.token = token
+        self.token = token if token else LATINWORDNET_TOKEN
 
         self.session = requests.Session()
 

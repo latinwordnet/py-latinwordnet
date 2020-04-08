@@ -4,13 +4,13 @@ with open("README.md", encoding="utf-8") as f:
     long_description = f.read()
 
 requirements = [
-    "requests>=2.22.0",
+    "requests>=2.22.0", "python-dotenv>=0.12.0"
 ]
 
 
 setup(
     name="latinwordnet",
-    version="0.2.9",
+    version="0.3.0",
     packages=find_packages(),
     url="https://github.com/wmshort/latinwordnet",
     license="GNU General Public License v3.0",
