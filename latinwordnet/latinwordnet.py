@@ -246,6 +246,10 @@ class LatinWordNet:
         self.token = token if token else LATINWORDNET_TOKEN
 
         self.session = requests.Session()
+        if self.token:
+            self.session.headers.update(
+                {"Authorization": f'Token {self.token}'}
+            )
 
     @lru_cache(maxsize=None)
     def lemmatize(self, form: str, pos: str = None):
@@ -317,8 +321,9 @@ class LatinWordNet:
             verify=True,
         )
         if results:
+            self.token = results.json()["token"]
             self.session.headers.update(
-                {"Authorization": f'Token {results.json()["token"]}'}
+                {"Authorization": f'Token {self.token}'}
             )
 
     def status(self):
